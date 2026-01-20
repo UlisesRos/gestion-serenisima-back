@@ -5,11 +5,10 @@ const compression = require('compression');
 const connectDB = require('./config/db');
 const { reiniciarCoberturas, limpiarDevoluciones } = require('./config/cronJobs');
 
+dotenv.config();
+
 // Inicializar Express
 const app = express();
-
-// Conectar a MongoDB
-connectDB();
 
 // Middlewares
 app.use(cors({
@@ -19,6 +18,9 @@ app.use(cors({
 app.use(compression()); // Comprimir respuestas para mayor velocidad
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+// Conectar a MongoDB
+connectDB();
 
 // Rutas
 app.use('/api/coberturas', require('./routes/coberturas'));

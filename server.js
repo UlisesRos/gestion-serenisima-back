@@ -12,7 +12,14 @@ const app = express();
 connectDB();
 
 // Middlewares
-app.use(cors()); // Permitir peticiones desde el frontend
+app.use(cors({
+  origin: [
+    'http://localhost:3000',          // desarrollo local
+    'https://gestion-serenisima.vercel.app'     // frontend en Vercel
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(compression()); // Comprimir respuestas para mayor velocidad
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies

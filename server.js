@@ -14,7 +14,7 @@ connectDB();
 // Middlewares
 app.use(cors({
   origin: [
-    'http://localhost:3000',          // desarrollo local
+    // 'http://localhost:3000',          // desarrollo local
     'https://gestion-serenisima.vercel.app'     // frontend en Vercel
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],

@@ -16,7 +16,11 @@ const productoDevolucionSchema = new mongoose.Schema({
     trim: true,
     default: '',
   },
-}, { _id: false });
+  completado: {
+    type: Boolean,
+    default: false,
+  },
+}, { _id: true }); // Asegurar que cada producto tenga _id
 
 const devolucionSchema = new mongoose.Schema({
   nombreCliente: {
@@ -44,8 +48,8 @@ const devolucionSchema = new mongoose.Schema({
 
 // Índices para búsquedas rápidas
 devolucionSchema.index({ nombreCliente: 1 });
-devolucionSchema.index({ fecha: -1 }); // -1 para ordenar de más reciente a más antigua
-devolucionSchema.index({ nombreCliente: 1, fecha: -1 }); // Índice compuesto
+devolucionSchema.index({ fecha: -1 });
+devolucionSchema.index({ nombreCliente: 1, fecha: -1 });
 
 const Devolucion = mongoose.model('Devolucion', devolucionSchema);
 

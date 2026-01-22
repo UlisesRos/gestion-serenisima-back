@@ -10,7 +10,7 @@ const productoSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-});
+}, { _id: true }); // Asegurar que cada producto tenga _id
 
 const clienteSchema = new mongoose.Schema({
   nombre: {
@@ -28,9 +28,11 @@ const clienteSchema = new mongoose.Schema({
     required: [true, 'La frecuencia es obligatoria'],
     enum: ['LMV', 'MJS'],
   },
-  productos: [productoSchema],
+  // DOS ARRAYS DE PRODUCTOS SEPARADOS
+  productosDanone: [productoSchema],
+  productosMastellone: [productoSchema],
 }, {
-  timestamps: true, // Agrega createdAt y updatedAt automáticamente
+  timestamps: true,
 });
 
 // Índices para búsquedas rápidas

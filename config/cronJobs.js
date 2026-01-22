@@ -4,38 +4,47 @@ const Devolucion = require('../models/Devolucion');
 
 /**
  * Reiniciar todas las coberturas (productos completados -> pendientes)
+ * IMPORTANTE: Reinicia TANTO Danone como Mastellone
  * Se ejecuta el 1° de cada mes a las 00:00
  */
 const reiniciarCoberturas = cron.schedule('0 0 1 * *', async () => {
   try {
     console.log('🔄 Iniciando reinicio mensual de coberturas...');
     
-    // Obtener todos los clientes
     const clientes = await Cliente.find();
     let totalProductosReiniciados = 0;
     
-    // Reiniciar productos de cada cliente
     for (const cliente of clientes) {
-      const productosCompletados = cliente.productos.filter(p => p.completado).length;
+      // Contar productos completados en AMBAS listas
+      const completadosDanone = cliente.productosDanone.filter(p => p.completado).length;
+      const completadosMastellone = cliente.productosMastellone.filter(p => p.completado).length;
       
-      // Marcar todos los productos como no completados
-      cliente.productos.forEach(producto => {
+      // Reiniciar DANONE
+      cliente.productosDanone.forEach(producto => {
+        producto.completado = false;
+      });
+      
+      // Reiniciar MASTELLONE
+      cliente.productosMastellone.forEach(producto => {
         producto.completado = false;
       });
       
       await cliente.save();
-      totalProductosReiniciados += productosCompletados;
+      totalProductosReiniciados += (completadosDanone + completadosMastellone);
     }
     
-    console.log(`✅ Coberturas reiniciadas: ${clientes.length} clientes, ${totalProductosReiniciados} productos marcados como pendientes`);
+    console.log(`✅ Coberturas reiniciadas:`);
+    console.log(`   - ${clientes.length} clientes actualizados`);
+    console.log(`   - ${totalProductosReiniciados} productos marcados como pendientes`);
+    console.log(`   - Danone y Mastellone reiniciados`);
     console.log(`📅 Fecha: ${new Date().toLocaleString('es-AR')}`);
     
   } catch (error) {
     console.error('❌ Error al reiniciar coberturas:', error);
   }
 }, {
-  scheduled: false, // No inicia automáticamente, lo activamos manualmente
-  timezone: "America/Argentina/Buenos_Aires" // Zona horaria de Argentina
+  scheduled: false,
+  timezone: "America/Argentina/Buenos_Aires"
 });
 
 /**
@@ -46,7 +55,6 @@ const limpiarDevoluciones = cron.schedule('30 0 1 * *', async () => {
   try {
     console.log('🧹 Iniciando limpieza de devoluciones antiguas...');
     
-    // Calcular fecha límite (2 meses atrás desde el primer día del mes actual)
     const hoy = new Date();
     const primerDiaMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const fechaLimite = new Date(primerDiaMesActual);
@@ -54,7 +62,6 @@ const limpiarDevoluciones = cron.schedule('30 0 1 * *', async () => {
     
     console.log(`📅 Fecha límite: ${fechaLimite.toLocaleDateString('es-AR')} (se borrarán devoluciones anteriores a esta fecha)`);
     
-    // Eliminar devoluciones anteriores a la fecha límite
     const resultado = await Devolucion.deleteMany({
       fecha: { $lt: fechaLimite }
     });

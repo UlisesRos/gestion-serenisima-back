@@ -72,7 +72,12 @@ router.post('/', [
     const devolucion = new Devolucion({
       nombreCliente: req.body.nombreCliente,
       fecha: req.body.fecha || new Date(),
-      productos: req.body.productos,
+      productos: req.body.productos.map(p => ({
+        codigo: p.codigo,
+        cantidad: p.cantidad,
+        descripcion: p.descripcion || '',
+        completado: false, // Por defecto no completado
+      })),
     });
 
     const nuevaDevolucion = await devolucion.save();
@@ -125,6 +130,37 @@ router.delete('/:id', async (req, res) => {
     }
 
     res.json({ message: 'Devolución eliminada correctamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error del servidor' });
+  }
+});
+
+// ==================== NUEVO: TOGGLE PRODUCTO ====================
+
+// @route   PUT /api/devoluciones/:id/productos/:productoId/toggle
+// @desc    Marcar/desmarcar un producto como completado
+// @access  Public
+router.put('/:id/productos/:productoId/toggle', async (req, res) => {
+  try {
+    const devolucion = await Devolucion.findById(req.params.id);
+
+    if (!devolucion) {
+      return res.status(404).json({ message: 'Devolución no encontrada' });
+    }
+
+    // Buscar el producto por _id en el subdocumento
+    const producto = devolucion.productos.id(req.params.productoId);
+    
+    if (!producto) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    // Toggle del estado
+    producto.completado = !producto.completado;
+
+    const devolucionActualizada = await devolucion.save();
+    res.json(devolucionActualizada);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error del servidor' });

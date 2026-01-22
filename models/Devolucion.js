@@ -16,11 +16,15 @@ const productoDevolucionSchema = new mongoose.Schema({
     trim: true,
     default: '',
   },
-  completado: {
+  controlado: {
     type: Boolean,
     default: false,
   },
-}, { _id: true }); // Asegurar que cada producto tenga _id
+  pasadoMaquina: {
+    type: Boolean,
+    default: false,
+  },
+}, { _id: true });
 
 const devolucionSchema = new mongoose.Schema({
   nombreCliente: {

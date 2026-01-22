@@ -74,7 +74,8 @@ router.post('/', [
         codigo: p.codigo,
         cantidad: p.cantidad,
         descripcion: p.descripcion || '',
-        completado: false,
+        controlado: false,
+        pasadoMaquina: false,
       })),
     });
 
@@ -134,10 +135,12 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// @route   PUT /api/devoluciones/:id/productos/:productoId/toggle
-// @desc    Marcar/desmarcar un producto como completado
+// ==================== TOGGLE CONTROLADO ====================
+
+// @route   PUT /api/devoluciones/:id/productos/:productoId/toggle-controlado
+// @desc    Marcar/desmarcar un producto como controlado
 // @access  Public
-router.put('/:id/productos/:productoId/toggle', async (req, res) => {
+router.put('/:id/productos/:productoId/toggle-controlado', async (req, res) => {
   try {
     const devolucion = await Devolucion.findById(req.params.id);
 
@@ -151,7 +154,7 @@ router.put('/:id/productos/:productoId/toggle', async (req, res) => {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
-    producto.completado = !producto.completado;
+    producto.controlado = !producto.controlado;
 
     const devolucionActualizada = await devolucion.save();
     res.json(devolucionActualizada);
@@ -160,6 +163,37 @@ router.put('/:id/productos/:productoId/toggle', async (req, res) => {
     res.status(500).json({ message: 'Error del servidor' });
   }
 });
+
+// ==================== TOGGLE PASADO MÁQUINA ====================
+
+// @route   PUT /api/devoluciones/:id/productos/:productoId/toggle-maquina
+// @desc    Marcar/desmarcar un producto como pasado a máquina
+// @access  Public
+router.put('/:id/productos/:productoId/toggle-maquina', async (req, res) => {
+  try {
+    const devolucion = await Devolucion.findById(req.params.id);
+
+    if (!devolucion) {
+      return res.status(404).json({ message: 'Devolución no encontrada' });
+    }
+
+    const producto = devolucion.productos.id(req.params.productoId);
+    
+    if (!producto) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    producto.pasadoMaquina = !producto.pasadoMaquina;
+
+    const devolucionActualizada = await devolucion.save();
+    res.json(devolucionActualizada);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error del servidor' });
+  }
+});
+
+// ==================== ACTUALIZAR PRODUCTO ====================
 
 // @route   PUT /api/devoluciones/:id/productos/:productoId
 // @desc    Actualizar código Y/O cantidad de un producto
@@ -186,12 +220,10 @@ router.put('/:id/productos/:productoId', [
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
-    // Actualizar código si se proporciona
     if (req.body.codigo !== undefined) {
       producto.codigo = req.body.codigo;
     }
 
-    // Actualizar cantidad si se proporciona
     if (req.body.cantidad !== undefined) {
       producto.cantidad = req.body.cantidad;
     }

@@ -11,12 +11,10 @@ router.get('/', async (req, res) => {
     const { nombre, fecha } = req.query;
     let query = {};
 
-    // Filtro por nombre
     if (nombre) {
       query.nombreCliente = { $regex: nombre, $options: 'i' };
     }
 
-    // Filtro por fecha
     if (fecha) {
       const fechaInicio = new Date(fecha);
       const fechaFin = new Date(fecha);
@@ -76,7 +74,7 @@ router.post('/', [
         codigo: p.codigo,
         cantidad: p.cantidad,
         descripcion: p.descripcion || '',
-        completado: false, // Por defecto no completado
+        completado: false,
       })),
     });
 
@@ -136,8 +134,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// ==================== NUEVO: TOGGLE PRODUCTO ====================
-
 // @route   PUT /api/devoluciones/:id/productos/:productoId/toggle
 // @desc    Marcar/desmarcar un producto como completado
 // @access  Public
@@ -149,15 +145,56 @@ router.put('/:id/productos/:productoId/toggle', async (req, res) => {
       return res.status(404).json({ message: 'Devolución no encontrada' });
     }
 
-    // Buscar el producto por _id en el subdocumento
     const producto = devolucion.productos.id(req.params.productoId);
     
     if (!producto) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
-    // Toggle del estado
     producto.completado = !producto.completado;
+
+    const devolucionActualizada = await devolucion.save();
+    res.json(devolucionActualizada);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error del servidor' });
+  }
+});
+
+// @route   PUT /api/devoluciones/:id/productos/:productoId
+// @desc    Actualizar código Y/O cantidad de un producto
+// @access  Public
+router.put('/:id/productos/:productoId', [
+  body('codigo').optional().trim().notEmpty().withMessage('El código no puede estar vacío'),
+  body('cantidad').optional().isInt({ min: 1 }).withMessage('La cantidad debe ser al menos 1'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const devolucion = await Devolucion.findById(req.params.id);
+
+    if (!devolucion) {
+      return res.status(404).json({ message: 'Devolución no encontrada' });
+    }
+
+    const producto = devolucion.productos.id(req.params.productoId);
+    
+    if (!producto) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    // Actualizar código si se proporciona
+    if (req.body.codigo !== undefined) {
+      producto.codigo = req.body.codigo;
+    }
+
+    // Actualizar cantidad si se proporciona
+    if (req.body.cantidad !== undefined) {
+      producto.cantidad = req.body.cantidad;
+    }
 
     const devolucionActualizada = await devolucion.save();
     res.json(devolucionActualizada);

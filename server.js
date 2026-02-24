@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const connectDB = require('./config/db');
+const healthRoutes = require('./routes/health');
 const { reiniciarCoberturas, limpiarDevoluciones } = require('./config/cronJobs');
 
 dotenv.config();
@@ -42,6 +43,7 @@ connectDB();
 app.use('/api/coberturas', require('./routes/coberturas'));
 app.use('/api/devoluciones', require('./routes/devoluciones'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/health', healthRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

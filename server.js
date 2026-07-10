@@ -57,7 +57,7 @@ app.get('/', (req, res) => {
     },
     cronJobs: {
       reiniciarCoberturas: 'Cada 1° del mes a las 00:00 hs',
-      limpiarDevoluciones: 'Cada 1° del mes a las 00:30 hs'
+      limpiarDevoluciones: 'Todos los días a las 03:00 hs (retención: 30 días)'
     }
   });
 });
@@ -89,7 +89,7 @@ app.listen(PORT, () => {
   console.log('  ✅ Reinicio de coberturas: Cada 1° del mes a las 00:00 hs (Argentina)');
   
   limpiarDevoluciones.start();
-  console.log('  ✅ Limpieza de devoluciones: Cada 1° del mes a las 00:30 hs (Argentina)');
+  console.log('  ✅ Limpieza de devoluciones: Todos los días a las 03:00 hs (retención: 30 días)');
   
   console.log('\n💡 Tip: Las tareas se ejecutarán automáticamente cada mes');
   console.log('📝 Ver info: GET /api/admin/info-tareas');

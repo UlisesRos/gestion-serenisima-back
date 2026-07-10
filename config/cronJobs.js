@@ -48,19 +48,16 @@ const reiniciarCoberturas = cron.schedule('0 0 1 * *', async () => {
 });
 
 /**
- * Limpiar devoluciones antiguas (más de 2 meses)
- * Se ejecuta el 1° de cada mes a las 00:30
+ * Limpiar devoluciones antiguas (más de 30 días)
+ * Se ejecuta todos los días a las 03:00
  */
-const limpiarDevoluciones = cron.schedule('30 0 1 * *', async () => {
+const limpiarDevoluciones = cron.schedule('0 3 * * *', async () => {
   try {
     console.log('🧹 Iniciando limpieza de devoluciones antiguas...');
-    
-    const hoy = new Date();
-    const primerDiaMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    const fechaLimite = new Date(primerDiaMesActual);
-    fechaLimite.setMonth(fechaLimite.getMonth() - 2);
-    
-    console.log(`📅 Fecha límite: ${fechaLimite.toLocaleDateString('es-AR')} (se borrarán devoluciones anteriores a esta fecha)`);
+
+    const fechaLimite = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    console.log(`📅 Fecha límite: ${fechaLimite.toLocaleDateString('es-AR')} (se borrarán devoluciones con más de 30 días)`);
     
     const resultado = await Devolucion.deleteMany({
       fecha: { $lt: fechaLimite }

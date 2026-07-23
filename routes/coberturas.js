@@ -28,14 +28,10 @@ function parsearPDF(texto) {
   // Normalizar saltos de línea
   const lineas = texto.split(/\r?\n/);
 
-  // Regex para detectar líneas de datos:
-  // - Empieza con un número de reparto (10 dígitos)
-  // - Seguido de un código de cliente (7-8 dígitos: empieza con 3 o 7)
-  // - Seguido del nombre del cliente (letras, espacios, puntos, comas, &, Ñ, etc.)
-  // - Seguido de cero o más códigos SKU de 6 dígitos
-  const lineaRe = /^(\d{10})\s+(\d{7,8})\s+([A-ZÁÉÍÓÚÑÜA-Z0-9\s.,&'()\-\/]+?)\s*((?:\d{6}\s*)*)$/i;
-  // Regex para extraer SKUs individuales de 6 dígitos
-  const skuRe = /\d{6}/g;
+  // Formato real del PDF: todo concatenado sin espacios
+  // [10 dígitos empresa][8 dígitos cliente][nombre (solo letras/símbolos, sin dígitos)][SKUs de 6 dígitos concatenados]
+  // Ejemplo: "009500028870047722ALMACENES D&D610002610001614200..."
+  const lineaRe = /^(\d{10})(\d{8})([^\d]+)(\d*)$/;
 
   for (const linea of lineas) {
     const trimmed = linea.trim();
@@ -48,8 +44,8 @@ function parsearPDF(texto) {
     const nombreCompleto = match[3].trim();
     const codigosStr = match[4] || '';
 
-    // Extraer SKUs de 6 dígitos
-    const skus = codigosStr.match(skuRe) || [];
+    // Partir los SKUs concatenados en grupos de 6 dígitos
+    const skus = codigosStr.match(/\d{6}/g) || [];
 
     if (map.has(codigoCliente)) {
       // Mergear códigos (el cliente apareció en otra página del PDF)

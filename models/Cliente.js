@@ -13,6 +13,11 @@ const productoSchema = new mongoose.Schema({
 }, { _id: true }); // Asegurar que cada producto tenga _id
 
 const clienteSchema = new mongoose.Schema({
+  codigoCliente: {
+    type: String,
+    trim: true,
+    sparse: true, // permite null/undefined en múltiples documentos
+  },
   nombre: {
     type: String,
     required: [true, 'El nombre es obligatorio'],
@@ -38,6 +43,7 @@ const clienteSchema = new mongoose.Schema({
 // Índices para búsquedas rápidas
 clienteSchema.index({ nombre: 1, apellido: 1 });
 clienteSchema.index({ frecuencia: 1 });
+clienteSchema.index({ codigoCliente: 1 });
 
 // Método virtual para nombre completo
 clienteSchema.virtual('nombreCompleto').get(function() {
